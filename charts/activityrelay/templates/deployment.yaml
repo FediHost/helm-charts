@@ -13,9 +13,10 @@ spec:
       {{- include "activityrelay.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
         {{- include "activityrelay.selectorLabels" . | nindent 8 }}
     spec:
