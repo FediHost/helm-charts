@@ -1,5 +1,16 @@
 apiVersion: v1
 entries:
+  activityrelay:
+  - apiVersion: v2
+    appVersion: 0.2.2
+    created: "2022-12-04T04:34:56.099798754Z"
+    description: A Helm chart for ActivityRelay
+    digest: cd3120872c4ab8f56df44e116cbfb5c7d98e9080fd3fb9e1d074860d26ee60d3
+    name: activityrelay
+    type: application
+    urls:
+    - https://github.com/FediHost/helm-charts/releases/download/activityrelay-0.1.0/activityrelay-0.1.0.tgz
+    version: 0.1.0
   mastodon:
   - apiVersion: v2
     appVersion: v4.0.2
@@ -23,4 +34,4 @@ entries:
     urls:
     - https://github.com/FediHost/helm-charts/releases/download/mastodon-3.0.0/mastodon-3.0.0.tgz
     version: 3.0.0
-generated: "2022-11-26T16:51:42.866611015Z"
+generated: "2022-12-04T04:34:56.099805554Z"
