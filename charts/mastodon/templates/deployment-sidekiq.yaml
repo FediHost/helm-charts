@@ -10,11 +10,14 @@ metadata:
     app.kubernetes.io/component: sidekiq-{{ .name }}
     app.kubernetes.io/part-of: rails
 spec:
-  replicas: {{ .replicas }}
   {{- if (has "scheduler" .queues) }}
+    {{- if (gt (int .replicas) 1) }}
+      {{ fail "The scheduler queue should never have more than 1 replicas" }}
+    {{- end }}
   strategy:
     type: Recreate
   {{- end }}
+  replicas: {{ .replicas }}
   selector:
     matchLabels:
       {{- include "mastodon.selectorLabels" $context | nindent 6 }}
@@ -96,7 +99,7 @@ spec:
             - name: "AWS_ACCESS_KEY_ID"
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.mastodon.s3.existingSecret }}
+                  name: {{ $context.Values.mastodon.s3.existingSecret }}
                   key: AWS_ACCESS_KEY_ID
             {{- end }}
             {{- if $context.Values.mastodon.smtp.existingSecret }}
