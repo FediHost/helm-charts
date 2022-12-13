@@ -192,6 +192,7 @@ mastodon:
     statsd:
       # -- Enable statsd publishing via STATSD_ADDR environment variable
       address: ""
+      namespace: ""
 
 ingress:
   enabled: true

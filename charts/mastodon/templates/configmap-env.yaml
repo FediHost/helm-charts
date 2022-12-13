@@ -320,4 +320,7 @@ data:
   {{- end }}
   {{- with .Values.mastodon.metrics.statsd.address }}
   STATSD_ADDR: {{ . }}
+  {{- with .Values.mastodon.metrics.statsd.namespace }}
+  STATSD_NAMESPACE: {{ . }}
+  {{- end }}
   {{- end }}
