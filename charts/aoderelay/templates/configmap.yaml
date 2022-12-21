@@ -24,7 +24,7 @@ data:
   PORT: "8080"
   DEBUG: "false"
   VALIDATE_SIGNATURES: "true"
-  HTTPS: "false"
+  HTTPS: "true"
   PRETTY_LOG: "false"
   PUBLISH_BLOCKS: "true"
   SLED_PATH: "./sled/db-0.34"
