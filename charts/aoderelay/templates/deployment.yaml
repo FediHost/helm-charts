@@ -41,9 +41,9 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - configMapRef:
-              name: {{ include "aoderelay.fullname" . }}
+                name: {{ include "aoderelay.fullname" . }}
             - secretRef:
-              name: {{ include "aoderelay.fullname" . }}
+                name: {{ include "aoderelay.fullname" . }}
           ports:
             - name: http
               containerPort: 8080
