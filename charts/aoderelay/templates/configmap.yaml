@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aoderelay.fullname" . }}
+  labels:
+    {{- include "aoderelay.labels" . | nindent 4 }}
+data:
+  HOSTNAME: {{ .Values.config.host | quote }}
+  RESTRICTED_MODE: {{ .Values.config.restrictedMode | quote }}
+  {{- with .Values.config.localDomains }}
+  LOCAL_DOMAINS: {{ join "," . | quote }}
+  {{- end }}
+  {{- with .Values.config.footerBlurb }}
+  FOOTER_BLURB: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.config.localBlurb }}
+  LOCAL_BLURB: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.config.openTelemetryUrl }}
+  OPENTELEMETRY_URL: localhost:4317
+  {{- end }}
+  RUST_LOG: {{ .Values.config.logLevel | quote }}
+  ADDR: "0.0.0.0"
+  PORT: "8080"
+  DEBUG: "false"
+  VALIDATE_SIGNATURES: "true"
+  HTTPS: "false"
+  PRETTY_LOG: "false"
+  PUBLISH_BLOCKS: "true"
+  SLED_PATH: "./sled/db-0.34"
