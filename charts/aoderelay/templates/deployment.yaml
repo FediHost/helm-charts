@@ -25,6 +25,8 @@ spec:
       serviceAccountName: {{ include "aoderelay.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      strategy:
+        type: Recreate
       volumes:
         - name: data-volume
           {{- if .Values.persistence.enabled }}
