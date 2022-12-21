@@ -14,9 +14,10 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
-        {{- toYaml .Values.podAnnotations | nindent 8 }}
+        {{- include "aoderelay.annotations" . | nindent 8 }}
+        {{- if .Values.podAnnotations}}
+        {{ toYaml .Values.podAnnotations | nindent 8 }}
+        {{- end}}
       labels:
         {{- include "aoderelay.selectorLabels" . | nindent 8 }}
     spec:
