@@ -54,6 +54,16 @@ entries:
   aoderelay:
   - apiVersion: v2
     appVersion: 0.3.76
+    created: "2022-12-21T15:47:41.143890171Z"
+    description: A Helm chart for AodeRelay
+    digest: 26868d7bd1d42f9cecd406de89150222cec19eda87596a7a02336b1d2307195d
+    name: aoderelay
+    type: application
+    urls:
+    - https://github.com/FediHost/helm-charts/releases/download/aoderelay-0.1.5/aoderelay-0.1.5.tgz
+    version: 0.1.5
+  - apiVersion: v2
+    appVersion: 0.3.76
     created: "2022-12-21T09:27:41.162472Z"
     description: A Helm chart for AodeRelay
     digest: b4fc07fccee6f6c9259610faf5dbfb4a913494bc15663e0fc65dab6519e8debb
@@ -184,4 +194,4 @@ entries:
     urls:
     - https://github.com/FediHost/helm-charts/releases/download/mastodon-3.0.0/mastodon-3.0.0.tgz
     version: 3.0.0
-generated: "2022-12-21T09:27:41.162501999Z"
+generated: "2022-12-21T15:47:41.14391577Z"
