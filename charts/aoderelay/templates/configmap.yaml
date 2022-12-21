@@ -27,4 +27,4 @@ data:
   HTTPS: "true"
   PRETTY_LOG: "false"
   PUBLISH_BLOCKS: "true"
-  SLED_PATH: "./sled/db-0.34"
+  SLED_PATH: "/mnt/sled/db-0.34"
