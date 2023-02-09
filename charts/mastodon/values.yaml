@@ -400,6 +400,10 @@ serviceAccount:
 # set with podAnnotations will be added to all deployment-managed pods.
 podAnnotations: {}
 
+# -- If set to true, an annotation with the current chart release number will be added to all mastodon pods. This will
+# cause all pods to be recreated every `helm upgrade` regardless of whether their config or spec changes.
+revisionPodAnnotation: false
+
 # -- The annotations set with jobAnnotations will be added to all job pods.
 jobAnnotations: {}
 
