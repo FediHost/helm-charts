@@ -322,4 +322,7 @@ STATSD_ADDR: {{ . }}
 {{- with .Values.mastodon.metrics.statsd.namespace }}
 STATSD_NAMESPACE: {{ . }}
 {{- end }}
+{{- with .Values.mastodon.trustedProxyIp }}
+TRUSTED_PROXY_IP: {{ . }}
+{{- end }}
 {{- end }}

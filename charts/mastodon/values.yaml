@@ -194,6 +194,9 @@ mastodon:
       address: ""
       namespace: ""
 
+  # -- If you have a caching proxy, enter its ip cidr here.
+  trustedProxyIp: ""
+
 ingress:
   enabled: true
   annotations:
