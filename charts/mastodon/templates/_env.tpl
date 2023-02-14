@@ -319,4 +319,7 @@ LDAP_UID_CONVERSION_REPLACE: {{ . }}
 {{- with .Values.mastodon.metrics.statsd.address }}
 STATSD_ADDR: {{ . }}
 {{- end }}
+{{- with .Values.mastodon.metrics.statsd.namespace }}
+STATSD_NAMESPACE: {{ . }}
+{{- end }}
 {{- end }}
