@@ -67,4 +67,8 @@ Create annotations for pods from confiigmap and secrets sha256sums
 {{- define "aoderelay.annotations" -}}
 checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
 checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+{{- if .Values.prometheus.enabled }}
+prometheus.io/scrape: "true"
+prometheus.io/port: {{ .Values.prometheus.port | default "9000" | quote }}
+{{- end }}
 {{- end -}}

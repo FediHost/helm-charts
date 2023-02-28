@@ -28,3 +28,7 @@ data:
   PRETTY_LOG: "false"
   PUBLISH_BLOCKS: "true"
   SLED_PATH: "/mnt/sled/db-0.34"
+  {{- if .Values.prometheus.enabled }}
+  PROMETHEUS_ADDR: "0.0.0.0"
+  PROMETHEUS_PORT: {{ .Values.prometheus.port | default "9000" | quote }}
+  {{- end }}

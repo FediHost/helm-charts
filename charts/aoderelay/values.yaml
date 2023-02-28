@@ -131,3 +131,7 @@ persistence:
   ##   GKE, AWS & OpenStack)
   ##
   # storageClass: "-"
+
+prometheus:
+  enabled: true
+  port: 9000
