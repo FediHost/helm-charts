@@ -202,6 +202,9 @@ mastodon:
       # -- Enable statsd publishing via STATSD_ADDR environment variable
       address: ""
 
+  # -- If you have a caching proxy, enter its cidr range here.
+  trustedProxyIp: "127.0.0.1/8 ::1/128 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 fc00::/7"
+
   # Sets the PREPARED_STATEMENTS environment variable: https://docs.joinmastodon.org/admin/config/#prepared_statements
   preparedStatements: true
 
@@ -414,7 +417,7 @@ podAnnotations: {}
 
 # If set to true, an annotation with the current chart release number will be added to all mastodon pods. This will
 # cause all pods to be recreated every `helm upgrade` regardless of whether their config or spec changes.
-revisionPodAnnotation: true
+revisionPodAnnotation: false
 
 # The annotations set with jobAnnotations will be added to all job pods.
 jobAnnotations: {}
