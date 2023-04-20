@@ -5,9 +5,9 @@ metadata:
   labels:
     {{- include "mastodon.labels" . | nindent 4 }}
 data:
-  {{- if .Values.mastodon.allowedPrivateAddresses }}
-  ALLOWED_PRIVATE_ADDRESSES: {{ .Values.mastodon.allowedPrivateAddresses | quote }}
-  {{- else }}
+  {{- with .Values.mastodon.allowedPrivateAddresses }}
+  ALLOWED_PRIVATE_ADDRESSES: {{ . | quote }}
+  {{- end }}
   {{- if .Values.postgresql.enabled }}
   DB_HOST: {{ template "mastodon.postgresql.fullname" . }}
   DB_PORT: "5432"
