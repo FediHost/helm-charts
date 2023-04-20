@@ -205,6 +205,9 @@ mastodon:
   # -- If you have a caching proxy, enter its cidr range here.
   trustedProxyIp: "127.0.0.1/8 ::1/128 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 fc00::/7"
 
+  # -- If you want to allow Mastodon to connect to private ips, enter the comma seperated ips or cidrs here.
+  allowedPrivateAddresses:
+
   # Sets the PREPARED_STATEMENTS environment variable: https://docs.joinmastodon.org/admin/config/#prepared_statements
   preparedStatements: true
 
