@@ -56,6 +56,7 @@ mastodon:
           storage: 100Gi
   s3:
     enabled: false
+    s3cmdImage: "d3fk/s3cmd:latest"
     access_key: ""
     access_secret: ""
     # -- you can also specify the name of an existing Secret

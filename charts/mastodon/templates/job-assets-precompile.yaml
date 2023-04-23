@@ -33,14 +33,23 @@ spec:
                       - rails
               topologyKey: kubernetes.io/hostname
       {{- end }}
+      {{- end }}
       volumes:
+        {{- if .Values.mastodon.s3.enabled }}
+        - name: assets
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: system
+          emptyDir:
+            sizeLimit: 1Gi
+        {{- else }}
         - name: assets
           persistentVolumeClaim:
             claimName: {{ template "mastodon.fullname" . }}-assets
         - name: system
           persistentVolumeClaim:
             claimName: {{ template "mastodon.fullname" . }}-system
-      {{- end }}
+        {{- end }}
       containers:
         - name: {{ include "mastodon.fullname" . }}-assets-precompile
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -68,10 +77,45 @@ spec:
                   key: redis-password
             - name: "PORT"
               value: {{ .Values.mastodon.web.port | quote }}
-          {{- if (not .Values.mastodon.s3.enabled) }}
           volumeMounts:
             - name: assets
               mountPath: /opt/mastodon/public/assets
             - name: system
               mountPath: /opt/mastodon/public/system
-          {{- end }}
+        {{- if .Values.mastodon.s3.enabled }}
+        {{- if .Values.mastodon.s3.cdn_host }}
+        - name: {{ include "mastodon.fullname" . }}-assets-sync
+          image: "{{ .Values.mastodon.s3.s3cmdImage }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - bash
+            - -c
+            - |
+                export AWS_DEFAULT_REGION="{{ .Values.mastodon.s3.region }}" &&
+                s3cmd sync --acl-public --delete-removed /opt/mastodon/public/assets/ s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/assets/ &&
+                s3cmd sync --acl-public --delete-removed /opt/mastodon/public/packs/ s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/packs/ &&
+          envFrom:
+            - configMapRef:
+                name: {{ include "mastodon.fullname" . }}-env
+            - secretRef:
+                name: {{ template "mastodon.secretName" . }}
+          env:
+            - name: "DB_PASS"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "mastodon.postgresql.secretName" . }}
+                  key: password
+            - name: "REDIS_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "mastodon.redis.secretName" . }}
+                  key: redis-password
+            - name: "PORT"
+              value: {{ .Values.mastodon.web.port | quote }}
+          volumeMounts:
+            - name: assets
+              mountPath: /opt/mastodon/public/assets
+            - name: system
+              mountPath: /opt/mastodon/public/system
+        {{- end }}
+        {{- end }}
