@@ -63,8 +63,8 @@ data:
   {{- with .Values.mastodon.s3.alias_host }}
   S3_ALIAS_HOST: {{ . }}
   {{- end }}
-  {{- with .Values.mastodon.s3.override_path_style }}
-  S3_OVERRIDE_PATH_STYLE: {{ . }}
+  {{- if .Values.mastodon.s3.override_path_style }}
+  S3_OVERRIDE_PATH_STYLE: true
   {{- end }}
   {{- with .Values.mastodon.s3.cdn_host }}
   CDN_HOST: {{ . }}
