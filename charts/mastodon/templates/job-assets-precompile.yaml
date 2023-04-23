@@ -92,7 +92,7 @@ spec:
             - -c
             - |
                 export AWS_DEFAULT_REGION="{{ .Values.mastodon.s3.region }}" &&
-                s3cmd sync --acl-public --delete-removed /opt/mastodon/public/inert.css s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/inert.css &&
+                s3cmd put --acl-public /opt/mastodon/public/inert.css s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/inert.css &&
                 s3cmd sync --acl-public --delete-removed /opt/mastodon/public/assets/ s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/assets/ &&
                 s3cmd sync --acl-public --delete-removed /opt/mastodon/public/packs/ s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/packs/
           envFrom:
