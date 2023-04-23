@@ -58,7 +58,7 @@ spec:
             - bash
             - -c
             - |
-                bundle exec rake assets:precompile && yarn cache clean
+                bundle exec rake assets:precompile && yarn cache clean && ls -lah /opt/mastodon/public
           envFrom:
             - configMapRef:
                 name: {{ include "mastodon.fullname" . }}-env
@@ -88,12 +88,13 @@ spec:
           image: "{{ .Values.mastodon.s3.s3cmdImage }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
-            - bash
+            - sh
             - -c
             - |
                 export AWS_DEFAULT_REGION="{{ .Values.mastodon.s3.region }}" &&
+                s3cmd sync --acl-public --delete-removed /opt/mastodon/public/inert.css s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/inert.css &&
                 s3cmd sync --acl-public --delete-removed /opt/mastodon/public/assets/ s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/assets/ &&
-                s3cmd sync --acl-public --delete-removed /opt/mastodon/public/packs/ s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/packs/ &&
+                s3cmd sync --acl-public --delete-removed /opt/mastodon/public/packs/ s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/packs/
           envFrom:
             - configMapRef:
                 name: {{ include "mastodon.fullname" . }}-env
