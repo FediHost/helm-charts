@@ -64,7 +64,7 @@ data:
   S3_ALIAS_HOST: {{ . }}
   {{- end }}
   {{- with .Values.mastodon.s3.cdn_host }}
-  CDN_HOST: {{ . }}
+  CDN_HOST: "{{ . }}"
   {{- end }}
   {{- end }}
   {{- with .Values.mastodon.smtp.auth_method }}

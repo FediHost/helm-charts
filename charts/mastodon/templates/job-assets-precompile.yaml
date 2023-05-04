@@ -50,7 +50,10 @@ spec:
           persistentVolumeClaim:
             claimName: {{ template "mastodon.fullname" . }}-system
         {{- end }}
-      containers:
+        - name: public
+          emptyDir:
+            sizeLimit: 2Gi
+      initContainers:
         - name: {{ include "mastodon.fullname" . }}-assets-precompile
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -58,13 +61,21 @@ spec:
             - bash
             - -c
             - |
-                bundle exec rake assets:precompile && yarn cache clean && ls -lah /opt/mastodon/public
+                bundle exec rake assets:precompile && \
+                yarn cache clean && \
+                cp -a /opt/mastodon/public/* /mnt/public/
           envFrom:
             - configMapRef:
                 name: {{ include "mastodon.fullname" . }}-env
             - secretRef:
                 name: {{ template "mastodon.secretName" . }}
           env:
+            {{- if .Values.mastodon.s3.enabled }}
+            {{- if .Values.mastodon.s3.upload_assets }}
+            - name: "CDN_HOST"
+              value: {{ .Values.mastodon.s3.cdn_host }}
+            {{- end }}
+            {{- end }}
             - name: "DB_PASS"
               valueFrom:
                 secretKeyRef:
@@ -77,46 +88,63 @@ spec:
                   key: redis-password
             - name: "PORT"
               value: {{ .Values.mastodon.web.port | quote }}
+            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.existingSecret) }}
+            - name: "AWS_SECRET_ACCESS_KEY"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mastodon.s3.existingSecret }}
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: "AWS_ACCESS_KEY_ID"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mastodon.s3.existingSecret }}
+                  key: AWS_ACCESS_KEY_ID
+            {{- end }}
           volumeMounts:
             - name: assets
               mountPath: /opt/mastodon/public/assets
             - name: system
               mountPath: /opt/mastodon/public/system
-        {{- if .Values.mastodon.s3.enabled }}
-        {{- if .Values.mastodon.s3.cdn_host }}
+            - name: public
+              mountPath: /mnt/public
+      containers:
         - name: {{ include "mastodon.fullname" . }}-assets-sync
-          image: "{{ .Values.mastodon.s3.s3cmdImage }}"
+          image: "{{ .Values.mastodon.s3.mcImage }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
+            {{- if .Values.mastodon.s3.enabled }}
+            {{- if .Values.mastodon.s3.upload_assets }}
             - sh
             - -c
             - |
-                export AWS_DEFAULT_REGION="{{ .Values.mastodon.s3.region }}" &&
-                s3cmd put --acl-public /opt/mastodon/public/inert.css s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/inert.css &&
-                s3cmd sync --acl-public --delete-removed /opt/mastodon/public/assets/ s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/assets/ &&
-                s3cmd sync --acl-public --delete-removed /opt/mastodon/public/packs/ s3://{{ .Values.mastodon.s3.endpoint | replace "https://" ""}}/{{ .Values.mastodon.s3.bucket }}/packs/
+                mc alias set target "https://{{ .Values.mastodon.s3.endpoint | replace "https://" "" | replace "s3://" "" }}" "${AWS_ACCESS_KEY_ID}" "${AWS_SECRET_ACCESS_KEY}" && \
+                mc mirror --md5 --preserve --overwrite --attr x-amz-acl=public-read --remove --no-color --exclude "accounts/*" --exclude "backups/*" --exclude "cache/*" --exclude "custom_emojis/*" --exclude "media_attachments/*" --exclude "site_uploads/*" "/mnt/public" "target/{{ .Values.mastodon.s3.bucket }}" && \
+                echo COMPLETE!
+            {{- end }}
+            {{- else }}
+            - sh
+            - -c
+            - |
+                echo COMPLETE!
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "mastodon.fullname" . }}-env
             - secretRef:
                 name: {{ template "mastodon.secretName" . }}
           env:
-            - name: "DB_PASS"
+            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.existingSecret) }}
+            - name: "AWS_SECRET_ACCESS_KEY"
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "mastodon.postgresql.secretName" . }}
-                  key: password
-            - name: "REDIS_PASSWORD"
+                  name: {{ .Values.mastodon.s3.existingSecret }}
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: "AWS_ACCESS_KEY_ID"
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "mastodon.redis.secretName" . }}
-                  key: redis-password
-            - name: "PORT"
-              value: {{ .Values.mastodon.web.port | quote }}
+                  name: {{ .Values.mastodon.s3.existingSecret }}
+                  key: AWS_ACCESS_KEY_ID
+            {{- end }}
           volumeMounts:
-            - name: assets
-              mountPath: /opt/mastodon/public/assets
-            - name: system
-              mountPath: /opt/mastodon/public/system
-        {{- end }}
-        {{- end }}
+            - name: public
+              mountPath: /mnt/public
