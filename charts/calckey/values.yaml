@@ -29,7 +29,7 @@ calckey:
     access_secret: ""
     baseUrl: "" # e.g. "https://my-bucket.nyc3.cdn.digitaloceanspaces.com"
     bucket: "" # e.g. "my-bucket"
-    prefix: "files"
+    prefix: files
     endpoint: "" # e.g. "nyc3.digitaloceanspaces.com:443"
     region: "" # e.g. "nyc3"
 
@@ -43,7 +43,6 @@ calckey:
     - administrator
     - me
     - system
-
 
 # https://github.com/bitnami/charts/tree/master/bitnami/postgresql#parameters
 postgresql:
@@ -80,7 +79,7 @@ elasticsearch:
   hostname: ""
   port: 9200
   ssl: false
-  auth:
+  auth: {}
     # username: ""
     # password: ""
   # @ignored

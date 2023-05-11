@@ -1,20 +1,5 @@
 # calckey
 
-## TODO:
-- validate elasticsearch functionality
-- add job to init admin user and managed config
-
-## Init Admin Config
-There currently isn't a job to initialize the admin user and the managed config, so this will work in the meantime:
-
-```shell
-export CALCKEY_USERNAME="my_desired_admin_handle" && \
-export CALCKEY_PASSWORD="myDesiredInitialPassword" && \
-export CALCKEY_HOST="calckey.example.com" && \
-export CALCKEY_TOKEN=$(curl -X POST https://$CALCKEY_HOST/api/admin/accounts/create  -H "Content-Type: application/json" -d "{ \"username\":\"$CALCKEY_USERNAME\", \"password\":\"$CALCKEY_PASSWORD\" }" | jq -r '.token') && \
-curl -X POST -H "Authorization: Bearer $CALCKEY_TOKEN" https://$CALCKEY_HOST/api/admin/accounts/hosted
-```
-
 ![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: rc](https://img.shields.io/badge/AppVersion-rc-informational?style=flat-square)
 
 A fun, new, open way to experience social media https://calckey.org
