@@ -14,6 +14,16 @@ calckey:
   isManagedHosting: true
   domain: calckey.local
 
+  deepl:
+    managed: false
+    authKey: ""
+    isPro: false
+
+  libreTranslate:
+    managed: false
+    apiUrl: ""
+    apiKey: ""
+
   smtp:
     managed: true
     from_address: notifications@example.com

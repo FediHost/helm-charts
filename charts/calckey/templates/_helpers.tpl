@@ -282,10 +282,15 @@ allowedPrivateNetworks:
 #maxUserSignups: 100
 isManagedHosting: {{ .Values.calckey.isManagedHosting }}
 deepl:
-  managed: false
-#  authKey: ''
-#  isPro: false
-#
+  managed: {{ .Values.calckey.deepl.managed }}
+  authKey: {{ .Values.calckey.deepl.authKey | quote}}
+  isPro: {{ .Values.calckey.deepl.isPro }}
+
+libreTranslate:
+  managed: {{ .Values.calckey.libreTranslate.managed }}
+  apiUrl: {{ .Values.calckey.libreTranslate.apiUrl | quote }}
+  apiKey: {{ .Values.calckey.libreTranslate.apiKey | quote }}
+
 email:
   managed: {{ .Values.calckey.smtp.managed }}
   address: {{ .Values.calckey.smtp.from_address | quote }}
