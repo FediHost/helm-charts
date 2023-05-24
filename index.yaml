@@ -225,6 +225,29 @@ entries:
   mastodon:
   - apiVersion: v2
     appVersion: v4.1.2
+    created: "2023-05-24T00:19:36.038724814Z"
+    dependencies:
+    - condition: elasticsearch.enabled
+      name: elasticsearch
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 19.0.1
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 11.1.3
+    - condition: redis.enabled
+      name: redis
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 16.13.2
+    description: Mastodon is a free, open-source social network server based on ActivityPub.
+    digest: 8525f3fe03bc7e51ef324070742a614cc69a0ecbc3d87729a447bd68f304202f
+    name: mastodon
+    type: application
+    urls:
+    - https://github.com/FediHost/helm-charts/releases/download/mastodon-5.1.2/mastodon-5.1.2.tgz
+    version: 5.1.2
+  - apiVersion: v2
+    appVersion: v4.1.2
     created: "2023-05-23T23:05:56.043141224Z"
     dependencies:
     - condition: elasticsearch.enabled
@@ -728,4 +751,4 @@ entries:
     urls:
     - https://github.com/FediHost/helm-charts/releases/download/mastodon-3.0.0/mastodon-3.0.0.tgz
     version: 3.0.0
-generated: "2023-05-23T23:05:56.043517928Z"
+generated: "2023-05-24T00:19:36.038959823Z"
