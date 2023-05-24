@@ -150,6 +150,10 @@ mastodon:
     # -- Instead of defining login/password above, you can specify the name of an existing secret here. Login and
     # password must be located in keys named `login` and `password` respectively.
     existingSecret:
+  libreTranslate:
+    enabled: false
+    endpoint:
+    apiKey:
   streaming:
     port: 4000
     # -- this should be set manually since os.cpus() returns the number of CPUs on
