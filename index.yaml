@@ -222,6 +222,18 @@ entries:
     urls:
     - https://github.com/FediHost/helm-charts/releases/download/calckey-0.1.0/calckey-0.1.0.tgz
     version: 0.1.0
+  fediblockhole:
+  - apiVersion: v2
+    appVersion: 0.4.2
+    created: "2023-06-01T17:41:24.475280857Z"
+    description: FediBlockHole is a tool for keeping a Mastodon instance blocklist
+      synchronised with remote lists.
+    digest: c3877fad338926f67c67dcb5aa948b5f7d0dcd4f467a64632746411f7dab2db4
+    name: fediblockhole
+    type: application
+    urls:
+    - https://github.com/FediHost/helm-charts/releases/download/fediblockhole-0.1.0/fediblockhole-0.1.0.tgz
+    version: 0.1.0
   mastodon:
   - apiVersion: v2
     appVersion: v4.1.2
@@ -774,4 +786,4 @@ entries:
     urls:
     - https://github.com/FediHost/helm-charts/releases/download/mastodon-3.0.0/mastodon-3.0.0.tgz
     version: 3.0.0
-generated: "2023-05-24T00:29:57.429767833Z"
+generated: "2023-06-01T17:41:24.475448259Z"
