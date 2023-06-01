@@ -1,0 +1,41 @@
+{{- if .Values.fediblockhole.cron.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "fediblockhole.fullname" . }}
+  labels:
+    {{- include "fediblockhole.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.fediblockhole.cron.sync.schedule }}
+  failedJobsHistoryLimit: {{ .Values.fediblockhole.cron.sync.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ .Values.fediblockhole.cron.sync.successfulJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: {{ include "fediblockhole.fullname" . }}
+          annotations:
+            checksum/configmap: {{ include ( print $.Template.BasePath "/configmap.yaml" ) . | sha256sum | quote }}
+            {{- with .Values.podAnnotations }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          labels:
+            {{- include "fediblockhole.selectorLabels" . | nindent 12 }}
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: {{ .Chart.Name }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command:
+                - fediblock-sync
+                - -c
+                - "/mnt/fediblockhole.conf.toml"
+              volumeMounts:
+                - name: config-volume
+                  mountPath: /mnt
+          volumes:
+            - name: config-volume
+              configMap:
+                name: {{ include "fediblockhole.fullname" . }}-config
+{{- end }}

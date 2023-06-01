@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "fediblockhole.fullname" . }}-config
+  labels:
+    {{- include "fediblockhole.labels" . | nindent 4 }}
+data:
+  fediblockhole.conf.toml: |
+    blocklist_instance_sources = []
+
+    blocklist_url_sources = [
+      { url = 'https://codeberg.org/oliphant/blocklists/raw/branch/main/blocklists/_unified_{{ .Values.fediblockhole.tier }}_blocklist.csv', format = 'csv' },
+    ]
+
+    allowlist_url_sources = []
+
+    # List of instances to write blocklist to
+    blocklist_instance_destinations = [
+      { domain = {{ .Values.fediblockhole.server.domain | squote }}, token = {{ .Values.fediblockhole.server.token | squote }}, max_followed_severity = {{ .Values.fediblockhole.server.max_followed_severity | squote }}},
+    ]
+
+    ## Set which fields we import
+    ## 'domain' and 'severity' are always imported, these are additional
+    ##
+    import_fields = ['public_comment', 'reject_media', 'reject_reports', 'obfuscate']
+
+    ## Set which fields we export
+    ## 'domain' and 'severity' are always exported, these are additional
+    ##
+    # export_fields = ['public_comment']
+    export_fields = ['public_comment', 'reject_media', 'reject_reports', 'obfuscate']
