@@ -78,9 +78,9 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{/*
-config/default.yml content
+Create the common config
 */}}
-{{- define "calckey.configDir.default.yml" -}}
+{{- define "calckey.config.common" -}}
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Calckey configuration
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -119,10 +119,10 @@ port: 3000
 db:
   {{- if .Values.postgresql.enabled }}
   host: {{ template "calckey.postgresql.fullname" . }}
-  port: '5432'
+  port: 5432
   {{- else }}
   host: {{ .Values.postgresql.postgresqlHostname }}
-  port: {{ .Values.postgresql.postgresqlPort | default "5432" | quote }}
+  port: {{ .Values.postgresql.postgresqlPort | default "5432" }}
   {{- end }}
 
   # Database name
@@ -148,11 +148,26 @@ redis:
   {{- else }}
   host: {{ required "When the redis chart is disabled .Values.redis.hostname is required" .Values.redis.hostname }}
   {{- end }}
-  port: {{ .Values.redis.port | default "6379" | quote }}
+  port: {{ .Values.redis.port | default "6379" }}
   #family: 0  # 0=Both, 4=IPv4, 6=IPv6
   pass: {{ .Values.redis.auth.password | quote }}
-  #prefix: example-prefix
-  #db: 1
+  {{- if .Values.redis.prefix }}
+  prefix: {{ .Values.redis.prefix | quote }}
+  {{- end }}
+  {{- if .Values.redis.db }}
+  db: {{ .Values.redis.db }}
+  {{- end }}
+
+# Please configure either MeiliSearch *or* Sonic.
+# If both MeiliSearch and Sonic configurations are present, MeiliSearch will take precedence.
+
+#   ┌───────────────────────────┐
+#───┘ MeiliSearch configuration └─────────────────────────────────────
+#meilisearch:
+#  host: meilisearch
+#  port: 7700
+#  ssl: false
+#  apiKey:
 
 #   ┌─────────────────────┐
 #───┘ Sonic configuration └─────────────────────────────────────
@@ -183,31 +198,13 @@ elasticsearch:
   {{- end }}
 {{- end }}
 
-#   ┌───────────────┐
-#───┘ ID generation └───────────────────────────────────────────
-
-# You can select the ID generation method.
-# You don't usually need to change this setting, but you can
-# change it according to your preferences.
-
-# Available methods:
-# aid ... Short, Millisecond accuracy
-# meid ... Similar to ObjectID, Millisecond accuracy
-# ulid ... Millisecond accuracy
-# objectid ... This is left for backward compatibility
-
-# ONCE YOU HAVE STARTED THE INSTANCE, DO NOT CHANGE THE
-# ID SETTINGS AFTER THAT!
-
-id: 'aid'
-
 #   ┌─────────────────────┐
 #───┘ Other configuration └─────────────────────────────────────
 
-# Max note length, should be < 8000.
+# Maximum length of a post (default 3000, max 8192)
 #maxNoteLength: 3000
 
-# Maximum lenght of an image caption or file comment (default 1500, max 8192)
+# Maximum length of an image caption (default 1500, max 8192)
 #maxCaptionLength: 1500
 
 # Reserved usernames that only the administrator can register with
@@ -244,6 +241,7 @@ reservedUsernames:
 #proxy: http://127.0.0.1:3128
 
 #proxyBypassHosts: [
+#  'web.kaiteki.app',
 #  'example.com',
 #  '192.0.2.8'
 #]
@@ -271,19 +269,27 @@ allowedPrivateNetworks:
 # Upload or download file size limits (bytes)
 #maxFileSize: 262144000
 
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Congrats, you've reached the end of the config file needed for most deployments!
+# Enjoy your Calckey server!
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+
+
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Managed hosting settings
-# !!!!!!!!!!
-# >>>>>> NORMAL SELF-HOSTERS, STAY AWAY! <<<<<<
-# >>>>>> YOU DON'T NEED THIS! <<<<<<
-# !!!!!!!!!!
+# >>> NORMAL SELF-HOSTERS, STAY AWAY! <<<
+# >>> YOU DON'T NEED THIS! <<<
 # Each category is optional, but if each item in each category is mandatory!
 # If you mess this up, that's on you, you've been warned...
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 #maxUserSignups: 100
 isManagedHosting: {{ .Values.calckey.isManagedHosting }}
 deepl:
   managed: {{ .Values.calckey.deepl.managed }}
-  authKey: {{ .Values.calckey.deepl.authKey | quote}}
+  authKey: {{ .Values.calckey.deepl.authKey | quote }}
   isPro: {{ .Values.calckey.deepl.isPro }}
 
 libreTranslate:
@@ -292,13 +298,14 @@ libreTranslate:
   apiKey: {{ .Values.calckey.libreTranslate.apiKey | quote }}
 
 email:
-  managed: {{ .Values.calckey.smtp.managed }}
-  address: {{ .Values.calckey.smtp.from_address | quote }}
-  host: {{ .Values.calckey.smtp.server | quote }}
-  port: {{ .Values.calckey.smtp.port }}
-  user: {{ .Values.calckey.smtp.login | quote }}
-  pass: {{ .Values.calckey.smtp.password | quote }}
-  useImplicitSslTls: {{ .Values.calckey.smtp.useImplicitSslTls }}
+  managed: {{ .Values.calckey.email.managed }}
+  address: {{ .Values.calckey.email.from_address | quote }}
+  host: {{ .Values.calckey.email.server | quote }}
+  port: {{ .Values.calckey.email.port }}
+  user: {{ .Values.calckey.email.login | quote }}
+  pass: {{ .Values.calckey.email.password | quote }}
+  useImplicitSslTls: {{ .Values.calckey.email.useImplicitSslTls }}
+
 objectStorage:
   managed: {{ .Values.calckey.objectStorage.managed }}
   baseUrl: {{ .Values.calckey.objectStorage.baseUrl | quote }}
@@ -320,4 +327,29 @@ objectStorage:
 
 # Seriously. Do NOT fill out the above settings if you're self-hosting.
 # They're much better off being set from the control panel.
+
+{{- end }}
+
+{{/*
+Create the server config
+*/}}
+{{- define "calckey.config.server" -}}
+{{ include "calckey.config.common" . }}
+{{- if .Values.calckey.separateWorker }}
+# Worker only mode
+onlyQueueProcessor: false
+{{- end }}
+
+{{- end }}
+
+{{/*
+Create the worker config
+*/}}
+{{- define "calckey.config.worker" -}}
+{{ include "calckey.config.common" . }}
+{{- if .Values.calckey.separateWorker }}
+# Worker only mode
+onlyQueueProcessor: true
+{{- end }}
+
 {{- end }}

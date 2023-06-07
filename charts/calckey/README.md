@@ -1,6 +1,6 @@
 # calckey
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: rc](https://img.shields.io/badge/AppVersion-rc-informational?style=flat-square)
+![Version: 0.1.3](https://img.shields.io/badge/Version-0.1.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v14.0.0-rc2c](https://img.shields.io/badge/AppVersion-v14.0.0--rc2c-informational?style=flat-square)
 
 A fun, new, open way to experience social media https://calckey.org
 
@@ -17,19 +17,29 @@ A fun, new, open way to experience social media https://calckey.org
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
-| autoscaling.enabled | bool | `false` |  |
-| autoscaling.maxReplicas | int | `100` |  |
-| autoscaling.minReplicas | int | `1` |  |
-| autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
 | calckey.allowedPrivateNetworks | list | `[]` | If you want to allow calckey to connect to private ips, enter the cidrs here. |
+| calckey.deepl.authKey | string | `""` |  |
+| calckey.deepl.isPro | bool | `false` |  |
+| calckey.deepl.managed | bool | `false` |  |
 | calckey.domain | string | `"calckey.local"` |  |
-| calckey.isManagedHosting | bool | `true` |  |
+| calckey.email.from_address | string | `"notifications@example.com"` |  |
+| calckey.email.login | string | `""` |  |
+| calckey.email.managed | bool | `false` |  |
+| calckey.email.password | string | `""` |  |
+| calckey.email.port | int | `587` |  |
+| calckey.email.server | string | `"smtp.mailgun.org"` |  |
+| calckey.email.useImplicitSslTls | bool | `false` |  |
+| calckey.isManagedHosting | bool | `false` |  |
+| calckey.libreTranslate.apiKey | string | `""` |  |
+| calckey.libreTranslate.apiUrl | string | `""` |  |
+| calckey.libreTranslate.managed | bool | `false` |  |
+| calckey.logTime | bool | `true` |  |
 | calckey.objectStorage.access_key | string | `""` |  |
 | calckey.objectStorage.access_secret | string | `""` |  |
 | calckey.objectStorage.baseUrl | string | `""` |  |
 | calckey.objectStorage.bucket | string | `""` |  |
 | calckey.objectStorage.endpoint | string | `""` |  |
-| calckey.objectStorage.managed | bool | `true` |  |
+| calckey.objectStorage.managed | bool | `false` |  |
 | calckey.objectStorage.prefix | string | `"files"` |  |
 | calckey.objectStorage.region | string | `""` |  |
 | calckey.reservedUsernames[0] | string | `"root"` |  |
@@ -37,17 +47,23 @@ A fun, new, open way to experience social media https://calckey.org
 | calckey.reservedUsernames[2] | string | `"administrator"` |  |
 | calckey.reservedUsernames[3] | string | `"me"` |  |
 | calckey.reservedUsernames[4] | string | `"system"` |  |
-| calckey.smtp.from_address | string | `"notifications@example.com"` |  |
-| calckey.smtp.login | string | `""` |  |
-| calckey.smtp.managed | bool | `true` |  |
-| calckey.smtp.password | string | `""` |  |
-| calckey.smtp.port | int | `587` |  |
-| calckey.smtp.server | string | `"smtp.mailgun.org"` |  |
-| calckey.smtp.useImplicitSslTls | bool | `false` |  |
-| elasticsearch | object | `{"auth":null,"enabled":false,"hostname":"","port":9200,"ssl":false}` | https://github.com/bitnami/charts/tree/master/bitnami/elasticsearch#parameters |
+| calckey.separateWorker | bool | `true` |  |
+| calckey.server.autoscaling.enabled | bool | `false` |  |
+| calckey.server.autoscaling.maxReplicas | int | `100` |  |
+| calckey.server.autoscaling.minReplicas | int | `1` |  |
+| calckey.server.autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
+| calckey.server.replicaCount | int | `1` |  |
+| calckey.server.resources | object | `{}` |  |
+| calckey.worker.autoscaling.enabled | bool | `false` |  |
+| calckey.worker.autoscaling.maxReplicas | int | `100` |  |
+| calckey.worker.autoscaling.minReplicas | int | `1` |  |
+| calckey.worker.autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
+| calckey.worker.replicaCount | int | `1` |  |
+| calckey.worker.resources | object | `{}` |  |
+| elasticsearch | object | `{"auth":{},"enabled":false,"hostname":"","port":9200,"ssl":false}` | https://github.com/bitnami/charts/tree/master/bitnami/elasticsearch#parameters |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
-| image.repository | string | `"docker.io/thatonecalculator/calckey"` |  |
+| image.repository | string | `"docker.io/lilthmooncohen/calckey"` |  |
 | image.tag | string | `""` |  |
 | imagePullSecrets | list | `[]` |  |
 | ingress.annotations | object | `{}` |  |
@@ -66,11 +82,11 @@ A fun, new, open way to experience social media https://calckey.org
 | postgresql.auth.username | string | `"calckey"` |  |
 | postgresql.enabled | bool | `true` | disable if you want to use an existing db; in which case the values below must match those of that external postgres instance |
 | redis.auth.password | string | `""` | you must set a password; the password generated by the redis chart will be rotated on each upgrade: |
+| redis.db | string | `nil` |  |
 | redis.enabled | bool | `true` |  |
 | redis.hostname | string | `""` |  |
 | redis.port | int | `6379` |  |
-| replicaCount | int | `1` |  |
-| resources | object | `{}` |  |
+| redis.prefix | string | `nil` |  |
 | securityContext | object | `{}` |  |
 | service.port | int | `80` |  |
 | service.type | string | `"ClusterIP"` |  |

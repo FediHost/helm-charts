@@ -28,7 +28,7 @@ spec:
       volumes:
         - name: config-volume
           secret:
-            secretName: {{ template "calckey.fullname" . }}-config
+            secretName: {{ template "calckey.fullname" . }}-config-server
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

@@ -1,0 +1,98 @@
+{{- if .Values.calckey.separateWorker }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "calckey.fullname" . }}-worker
+  labels:
+    {{- include "calckey.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.calckey.worker.autoscaling.enabled }}
+  replicas: {{ .Values.calckey.worker.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "calckey.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+      app.kubernetes.io/part-of: calckey
+  template:
+    metadata:
+      annotations:
+        checksum/secret-config: {{ include ( print $.Template.BasePath "/secret-config-worker.yaml" ) . | sha256sum | quote }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "calckey.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+        app.kubernetes.io/part-of: calckey
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "calckey.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: config-volume
+          secret:
+            secretName: {{ template "calckey.fullname" . }}-config-worker
+        - name: calckey-config-dir
+          emptyDir: {}
+      initContainers:
+        - name: init-config
+          image: alpine
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - >-
+                cat /mnt/default.yml > /calckey/.config/default.yml &&
+                echo "" >> /calckey/.config/default.yml &&
+                echo "cuid:" >> /calckey/.config/default.yml &&
+                echo "  fingerprint: $HOSTNAME" >> /calckey/.config/default.yml &&
+                echo "" >> /calckey/.config/default.yml &&
+                echo "Config initialized!"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /mnt
+            - name: calckey-config-dir
+              mountPath: /calckey/.config
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - pnpm
+            - run
+            - start
+          env:
+            - name: "NODE_ENV"
+              value: "production"
+            {{- if .Values.calckey.logTime }}
+            - name: "MK_WITH_LOG_TIME"
+              value: "true"
+            {{- end }}
+            {{- if .Values.calckey.separateWorker }}
+            - name: "MK_ONLY_QUEUE"
+              value: "true"
+            {{- end }}
+          volumeMounts:
+            - name: calckey-config-dir
+              mountPath: /calckey/.config
+          resources:
+            {{- toYaml .Values.calckey.worker.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

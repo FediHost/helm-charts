@@ -1,0 +1,28 @@
+{{- if .Values.calckey.worker.autoscaling.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "calckey.fullname" . }}-worker
+  labels:
+    {{- include "calckey.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "calckey.fullname" . }}
+  minReplicas: {{ .Values.calckey.worker.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.calckey.worker.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.calckey.worker.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.calckey.worker.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.calckey.worker.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: {{ .Values.calckey.worker.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

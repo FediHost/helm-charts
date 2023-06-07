@@ -1,25 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "calckey.fullname" . }}
+  name: {{ include "calckey.fullname" . }}-server
   labels:
     {{- include "calckey.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  {{- if not .Values.calckey.server.autoscaling.enabled }}
+  replicas: {{ .Values.calckey.server.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
       {{- include "calckey.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: server
+      app.kubernetes.io/part-of: calckey
   template:
     metadata:
       annotations:
-        checksum/secret-config: {{ include ( print $.Template.BasePath "/secret-config.yaml" ) . | sha256sum | quote }}
+        checksum/secret-config: {{ include ( print $.Template.BasePath "/secret-config-server.yaml" ) . | sha256sum | quote }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
         {{- include "calckey.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: server
+        app.kubernetes.io/part-of: calckey
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -31,7 +35,27 @@ spec:
       volumes:
         - name: config-volume
           secret:
-            secretName: {{ template "calckey.fullname" . }}-config
+            secretName: {{ template "calckey.fullname" . }}-config-server
+        - name: calckey-config-dir
+          emptyDir: {}
+      initContainers:
+        - name: init-config
+          image: alpine
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - >-
+                cat /mnt/default.yml > /calckey/.config/default.yml &&
+                echo "" >> /calckey/.config/default.yml &&
+                echo "cuid:" >> /calckey/.config/default.yml &&
+                echo "  fingerprint: $HOSTNAME" >> /calckey/.config/default.yml &&
+                echo "" >> /calckey/.config/default.yml &&
+                echo "Config initialized!"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /mnt
+            - name: calckey-config-dir
+              mountPath: /calckey/.config
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -45,8 +69,16 @@ spec:
           env:
             - name: "NODE_ENV"
               value: "production"
+            {{- if .Values.calckey.logTime }}
+            - name: "MK_WITH_LOG_TIME"
+              value: "true"
+            {{- end }}
+            {{- if .Values.calckey.separateWorker }}
+            - name: "MK_ONLY_SERVER"
+              value: "true"
+            {{- end }}
           volumeMounts:
-            - name: config-volume
+            - name: calckey-config-dir
               mountPath: /calckey/.config
           ports:
             - name: http
@@ -67,7 +99,7 @@ spec:
               path: /
               port: http
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.calckey.server.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
