@@ -36,10 +36,10 @@ spec:
           volumes:
             - name: assets
               persistentVolumeClaim:
-                claimName: {{ template "mastodon.fullname" . }}-assets
+                claimName: {{ template "mastodon.pvc.assets" . }}
             - name: system
               persistentVolumeClaim:
-                claimName: {{ template "mastodon.fullname" . }}-system
+                claimName: {{ template "mastodon.pvc.system" . }}
           {{- end }}
           containers:
             - name: {{ include "mastodon.fullname" . }}-media-remove
@@ -65,6 +65,27 @@ spec:
                     secretKeyRef:
                       name: {{ template "mastodon.redis.secretName" . }}
                       key: redis-password
+                {{- if and .Values.redis.sidekiq.enabled .Values.redis.sidekiq.auth.existingSecret }}
+                - name: "SIDEKIQ_REDIS_PASSWORD"
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ template "mastodon.redis.sidekiq.secretName" . }}
+                      key: redis-password
+                {{- end }}
+                {{- if and .Values.redis.cache.enabled .Values.redis.cache.auth.existingSecret }}
+                - name: "CACHE_REDIS_PASSWORD"
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ template "mastodon.redis.cache.secretName" . }}
+                      key: redis-password
+                {{- end }}
+                {{- if and .Values.elasticsearch.existingSecret (or .Values.elasticsearch.enabled .Values.elasticsearch.hostname) }}
+                - name: "ES_PASS"
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.elasticsearch.existingSecret }}
+                      key: password
+                {{- end }}
                 - name: "PORT"
                   value: {{ .Values.mastodon.web.port | quote }}
                 {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.existingSecret) }}
