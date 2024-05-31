@@ -26,22 +26,17 @@ jobs:
 
       - name: Add repositories
         run: |
-          added_repos=""
-          added_names=""
           for dir in $(ls -d charts/*/); do
             helm dependency list $dir 2> /dev/null | tail -n +2 | head -n -1 | awk '{ print $1 " " $3 }' | while read name url; do
-              if echo "$added_repos" | grep -q "$url"; then
-                echo "Repository $name ($url) already added, skipping."
-              elif echo "$added_names" | grep -q "$name"; then
+              if helm repo list | grep -q "^$name\s"; then
                 echo "Repository name $name already exists, skipping."
+              elif helm repo list | awk '{print $3}' | grep -q "^$url$"; then
+                echo "Repository URL $url already added, skipping."
               else
                 helm repo add $name $url
-                added_repos="$added_repos $url"
-                added_names="$added_names $name"
               fi
             done
           done
-
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.4.1
