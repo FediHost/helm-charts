@@ -48,7 +48,7 @@ spec:
         - name: system
           emptyDir: {}
       {{- end }}
-      containers:
+      initContainers:
         - name: {{ include "mastodon.fullname" . }}-assets-precompile
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -89,10 +89,51 @@ spec:
             {{- end }}
             - name: "PORT"
               value: {{ .Values.mastodon.web.port | quote }}
-            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.upload_assets) }}
+            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
             - name: "CDN_HOST"
               value: {{ .Values.mastodon.s3.cdn_host }}
             {{- end }}
+            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.existingSecret) }}
+            - name: "AWS_SECRET_ACCESS_KEY"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mastodon.s3.existingSecret }}
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: "AWS_ACCESS_KEY_ID"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mastodon.s3.existingSecret }}
+                  key: AWS_ACCESS_KEY_ID
+          volumeMounts:
+            - name: assets
+              mountPath: /opt/mastodon/public/assets
+            - name: system
+              mountPath: /opt/mastodon/public/system
+            {{- end }}
+      containers:
+        - name: {{ include "mastodon.fullname" . }}-assets-sync
+          image: "{{ .Values.mastodon.s3.mcImage }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
+            - sh
+            - -c
+            - |
+                mc alias set target "https://{{ .Values.mastodon.s3.endpoint | replace "https://" "" | replace "s3://" "" }}" "${AWS_ACCESS_KEY_ID}" "${AWS_SECRET_ACCESS_KEY}" && \
+                mc mirror --md5 --preserve --overwrite --attr x-amz-acl=public-read --remove --no-color --exclude "accounts/*" --exclude "backups/*" --exclude "cache/*" --exclude "custom_emojis/*" --exclude "media_attachments/*" --exclude "site_uploads/*" "/opt/mastodon/public" "target/{{ .Values.mastodon.s3.bucket }}" && \
+                echo COMPLETE!
+            {{- else }}
+            - sh
+            - -c
+            - |
+                echo COMPLETE!
+            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "mastodon.fullname" . }}-env
+            - secretRef:
+                name: {{ template "mastodon.secretName" . }}
+          env:
             {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.existingSecret) }}
             - name: "AWS_SECRET_ACCESS_KEY"
               valueFrom:
