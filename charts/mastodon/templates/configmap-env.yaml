@@ -110,6 +110,9 @@ data:
   {{- end }}
   {{- with .Values.mastodon.s3.region }}
   S3_REGION: {{ . }}
+  AWS_REGION: {{ . }}
+  {{- end }}
+  {{- with .Values.mastodon.s3.access_key_id }}
   {{- end }}
   {{- with .Values.mastodon.s3.alias_host }}
   S3_ALIAS_HOST: {{ . }}
