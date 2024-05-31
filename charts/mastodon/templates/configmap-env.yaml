@@ -114,6 +114,9 @@ data:
   {{- with .Values.mastodon.s3.alias_host }}
   S3_ALIAS_HOST: {{ . }}
   {{- end }}
+  {{- with .Values.mastodon.s3.cdn_host }}
+  CDN_HOST: "{{ . }}"
+  {{- end }}
   {{- with .Values.mastodon.s3.multipart_threshold }}
   S3_MULTIPART_THRESHOLD: "{{ . }}"
   {{- end }}

@@ -86,6 +86,7 @@ mastodon:
     permission: ""
     # -- If you have a caching proxy, enter its base URL here.
     alias_host: ""
+    cdn_host: ""
     # When uploading data to S3, if the number of bytes to send exceedes
     # multipart_threshold then a multi part session is automatically started
     # and the data is sent up in chunks. Defaults to 16777216 (16MB).
