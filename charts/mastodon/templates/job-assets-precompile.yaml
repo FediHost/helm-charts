@@ -104,12 +104,12 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.mastodon.s3.existingSecret }}
                   key: AWS_ACCESS_KEY_ID
+            {{- end }}
           volumeMounts:
             - name: assets
               mountPath: /opt/mastodon/public/assets
             - name: system
               mountPath: /opt/mastodon/public/system
-            {{- end }}
       containers:
         - name: {{ include "mastodon.fullname" . }}-assets-sync
           image: "{{ .Values.mastodon.s3.mcImage }}"
