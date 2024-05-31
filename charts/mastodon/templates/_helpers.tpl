@@ -90,7 +90,7 @@ Create the name of the assets persistent volume to use
 {{- if .Values.mastodon.persistence.assets.existingClaim }}
     {{- printf "%s" (tpl .Values.mastodon.persistence.assets.existingClaim $) -}}
 {{- else -}}
-    {{- printf "%s-assets" (include "common.names.fullname" .) -}}
+    {{- printf "%s-assets" (include "mastodon.fullname" .) -}}
 {{- end -}}
 {{- end -}}
 
@@ -101,7 +101,7 @@ Create the name of the system persistent volume to use
 {{- if .Values.mastodon.persistence.system.existingClaim }}
     {{- printf "%s" (tpl .Values.mastodon.persistence.system.existingClaim $) -}}
 {{- else -}}
-    {{- printf "%s-system" (include "common.names.fullname" .) -}}
+    {{- printf "%s-system" (include "mastodon.fullname" .) -}}
 {{- end -}}
 {{- end -}}
 
