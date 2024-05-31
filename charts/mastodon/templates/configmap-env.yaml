@@ -110,7 +110,7 @@ data:
   {{- end }}
   {{- with .Values.mastodon.s3.region }}
   S3_REGION: {{ . }}
-  AWS_REGION: {{ . }}
+  AWS_DEFAULT_REGION: {{ . }}
   {{- end }}
   {{- with .Values.mastodon.s3.access_key_id }}
   {{- end }}
