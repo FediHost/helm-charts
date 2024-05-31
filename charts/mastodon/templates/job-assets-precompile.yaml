@@ -120,7 +120,7 @@ spec:
             - -c
             - |
                 mc alias set target "https://{{ .Values.mastodon.s3.endpoint | replace "https://" "" | replace "s3://" "" }}" "${AWS_ACCESS_KEY_ID}" "${AWS_SECRET_ACCESS_KEY}" && \
-                mc mirror --md5 --preserve --overwrite --attr x-amz-acl=public-read --remove --no-color --exclude "accounts/*" --exclude "backups/*" --exclude "cache/*" --exclude "custom_emojis/*" --exclude "media_attachments/*" --exclude "site_uploads/*" "/opt/mastodon/public" "target/{{ .Values.mastodon.s3.bucket }}" && \
+                mc mirror --region={{ .Values.mastodon.s3.region }} --md5 --preserve --overwrite --attr x-amz-acl=public-read --remove --no-color --exclude "accounts/*" --exclude "backups/*" --exclude "cache/*" --exclude "custom_emojis/*" --exclude "media_attachments/*" --exclude "site_uploads/*" "/opt/mastodon/public" "target/{{ .Values.mastodon.s3.bucket }}" && \
                 echo COMPLETE!
             {{- else }}
             - sh
