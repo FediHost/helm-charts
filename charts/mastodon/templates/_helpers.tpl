@@ -32,11 +32,21 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Labels added on every Mastodon resource
+*/}}
+{{- define "mastodon.globalLabels" -}}
+{{- range $k, $v := .Values.mastodon.labels }}
+{{ $k }}: {{ quote $v }}
+{{- end -}}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "mastodon.labels" -}}
 helm.sh/chart: {{ include "mastodon.chart" . }}
 {{ include "mastodon.selectorLabels" . }}
+{{ include "mastodon.globalLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -74,6 +84,28 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+Create the name of the assets persistent volume to use
+*/}}
+{{- define "mastodon.pvc.assets" -}}
+{{- if .Values.mastodon.persistence.assets.existingClaim }}
+    {{- printf "%s" (tpl .Values.mastodon.persistence.assets.existingClaim $) -}}
+{{- else -}}
+    {{- printf "%s-assets" (include "common.names.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the system persistent volume to use
+*/}}
+{{- define "mastodon.pvc.system" -}}
+{{- if .Values.mastodon.persistence.system.existingClaim }}
+    {{- printf "%s" (tpl .Values.mastodon.persistence.system.existingClaim $) -}}
+{{- else -}}
+    {{- printf "%s-system" (include "common.names.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified name for dependent services.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
@@ -96,7 +128,7 @@ Get the mastodon secret.
 {{- if .Values.mastodon.secrets.existingSecret }}
     {{- printf "%s" (tpl .Values.mastodon.secrets.existingSecret $) -}}
 {{- else -}}
-    {{- printf "%s" (include "common.names.fullname" .) -}}
+    {{- printf "%s" (include "mastodon.fullname" .) -}}
 {{- end -}}
 {{- end -}}
 
@@ -107,7 +139,7 @@ Get the smtp secret.
 {{- if .Values.mastodon.smtp.existingSecret }}
     {{- printf "%s" (tpl .Values.mastodon.smtp.existingSecret $) -}}
 {{- else -}}
-    {{- printf "%s-smtp" (include "common.names.fullname" .) -}}
+    {{- printf "%s-smtp" (include "mastodon.fullname" .) -}}
 {{- end -}}
 {{- end -}}
 
@@ -120,7 +152,7 @@ Get the postgresql secret.
 {{- else if .Values.postgresql.enabled -}}
     {{- printf "%s-postgresql" (tpl .Release.Name $) -}}
 {{- else -}}
-    {{- printf "%s" (include "common.names.fullname" .) -}}
+    {{- printf "%s" (include "mastodon.fullname" .) -}}
 {{- end -}}
 {{- end -}}
 
@@ -129,6 +161,38 @@ Get the redis secret.
 */}}
 {{- define "mastodon.redis.secretName" -}}
 {{- if .Values.redis.auth.existingSecret }}
+    {{- printf "%s" (tpl .Values.redis.auth.existingSecret $) -}}
+{{- else if .Values.redis.existingSecret }}
+    {{- printf "%s" (tpl .Values.redis.existingSecret $) -}}
+{{- else if .Values.redis.enabled -}}
+    {{- printf "%s-redis" (tpl .Release.Name $) -}}
+{{- else -}}
+    {{- printf "%s-redis" (include "mastodon.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the redis secret (sidekiq).
+*/}}
+{{- define "mastodon.redis.sidekiq.secretName" -}}
+{{- if .Values.redis.sidekiq.auth.existingSecret }}
+    {{- printf "%s" (tpl .Values.redis.sidekiq.auth.existingSecret $) -}}
+{{- else if .Values.redis.auth.existingSecret }}
+    {{- printf "%s" (tpl .Values.redis.auth.existingSecret $) -}}
+{{- else if .Values.redis.existingSecret }}
+    {{- printf "%s" (tpl .Values.redis.existingSecret $) -}}
+{{- else -}}
+    {{- printf "%s-redis" (tpl .Release.Name $) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the redis secret (cache).
+*/}}
+{{- define "mastodon.redis.cache.secretName" -}}
+{{- if .Values.redis.cache.auth.existingSecret }}
+    {{- printf "%s" (tpl .Values.redis.cache.auth.existingSecret $) -}}
+{{- else if .Values.redis.auth.existingSecret }}
     {{- printf "%s" (tpl .Values.redis.auth.existingSecret $) -}}
 {{- else if .Values.redis.existingSecret }}
     {{- printf "%s" (tpl .Values.redis.existingSecret $) -}}
@@ -161,3 +225,16 @@ Find highest number of needed database connections to set DB_POOL variable
 {{- end }}
 {{- $poolSize | quote }}
 {{- end }}
+
+{{/*
+Full hostname for a custom Elasticsearch cluster
+*/}}
+{{- define "mastodon.elasticsearch.fullHostname" -}}
+{{- if not .Values.elasticsearch.enabled }}
+    {{- if .Values.elasticsearch.tls }}
+        {{- printf "https://%s" (tpl .Values.elasticsearch.hostname $) -}}
+    {{- else -}}
+        {{- printf "%s" (tpl .Values.elasticsearch.hostname $) -}}
+    {{- end }}
+{{- end -}}
+{{- end -}}
