@@ -54,6 +54,7 @@ mastodon:
   # -- Enables "Limited Federation Mode" for more details see: https://docs.joinmastodon.org/admin/config/#limited_federation_mode
   limitedFederationMode: false
   allowedPrivateAddresses: null
+  characterLimit:
   persistence:
     assets:
       # -- ReadWriteOnce is more widely supported than ReadWriteMany, but limits
