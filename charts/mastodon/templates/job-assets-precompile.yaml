@@ -56,9 +56,13 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - bash
-            - -c
+            - -ec
             - |
-                bundle exec rake assets:precompile && yarn cache clean
+                bundle exec rake assets:precompile
+                yarn cache clean
+                {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
+                cp -r /opt/mastodon/public/* /mnt/packs
+                {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "mastodon.fullname" . }}-env
@@ -110,10 +114,12 @@ spec:
           volumeMounts:
             - name: assets
               mountPath: /opt/mastodon/public/assets
-            - name: packs
-              mountPath: /opt/mastodon/public/packs
             - name: system
               mountPath: /opt/mastodon/public/system
+            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
+            - name: packs
+              mountPath: /mnt/packs
+            {{- end }}
       containers:
         - name: {{ include "mastodon.fullname" . }}-assets-sync
           image: "{{ .Values.mastodon.s3.mcImage }}"
@@ -153,8 +159,10 @@ spec:
           volumeMounts:
             - name: assets
               mountPath: /opt/mastodon/public/assets
-            - name: packs
-              mountPath: /opt/mastodon/public/packs
             - name: system
               mountPath: /opt/mastodon/public/system
+            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
+            - name: packs
+              mountPath: /opt/mastodon/public/packs
+            {{- end }}
 {{- end -}}
