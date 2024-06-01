@@ -45,6 +45,8 @@ spec:
       volumes:
         - name: assets
           emptyDir: {}
+        - name: packs
+          emptyDir: {}
         - name: system
           emptyDir: {}
       {{- end }}
@@ -108,6 +110,8 @@ spec:
           volumeMounts:
             - name: assets
               mountPath: /opt/mastodon/public/assets
+            - name: packs
+              mountPath: /opt/mastodon/public/packs
             - name: system
               mountPath: /opt/mastodon/public/system
       containers:
@@ -149,6 +153,8 @@ spec:
           volumeMounts:
             - name: assets
               mountPath: /opt/mastodon/public/assets
+            - name: packs
+              mountPath: /opt/mastodon/public/packs
             - name: system
               mountPath: /opt/mastodon/public/system
 {{- end -}}
