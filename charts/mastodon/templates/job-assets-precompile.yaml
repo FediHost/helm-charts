@@ -44,6 +44,10 @@ spec:
       {{- else }}
       {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
       volumes:
+        - name: assets
+          emptyDir: {}
+        - name: system
+          emptyDir: {}
         - name: public
           emptyDir: {}
       {{- end }}
@@ -110,14 +114,13 @@ spec:
                   key: AWS_ACCESS_KEY_ID
             {{- end }}
           volumeMounts:
-            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
-            - name: public
-              mountPath: /mnt/public
-            {{- else }}
             - name: assets
               mountPath: /opt/mastodon/public/assets
             - name: system
               mountPath: /opt/mastodon/public/system
+            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
+            - name: public
+              mountPath: /mnt/public
             {{- end }}
       containers:
         - name: {{ include "mastodon.fullname" . }}-assets-sync
