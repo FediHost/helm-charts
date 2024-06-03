@@ -42,13 +42,11 @@ spec:
           persistentVolumeClaim:
             claimName: {{ template "mastodon.pvc.system" . }}
       {{- else }}
+      {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
       volumes:
-        - name: assets
+        - name: public
           emptyDir: {}
-        - name: packs
-          emptyDir: {}
-        - name: system
-          emptyDir: {}
+      {{- end }}
       {{- end }}
       initContainers:
         - name: {{ include "mastodon.fullname" . }}-assets-precompile
@@ -61,7 +59,7 @@ spec:
                 bundle exec rake assets:precompile
                 yarn cache clean
                 {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
-                cp -r /opt/mastodon/public/* /mnt/packs
+                cp -r /opt/mastodon/public/* /mnt/public/
                 {{- end }}
           envFrom:
             - configMapRef:
@@ -112,13 +110,14 @@ spec:
                   key: AWS_ACCESS_KEY_ID
             {{- end }}
           volumeMounts:
+            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
+            - name: public
+              mountPath: /mnt/public
+            {{- else }}
             - name: assets
               mountPath: /opt/mastodon/public/assets
             - name: system
               mountPath: /opt/mastodon/public/system
-            {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
-            - name: packs
-              mountPath: /mnt/packs
             {{- end }}
       containers:
         - name: {{ include "mastodon.fullname" . }}-assets-sync
@@ -130,7 +129,7 @@ spec:
             - -c
             - |
                 mc alias set target "https://{{ .Values.mastodon.s3.endpoint | replace "https://" "" | replace "s3://" "" }}" "${AWS_ACCESS_KEY_ID}" "${AWS_SECRET_ACCESS_KEY}" && \
-                mc mirror --region={{ .Values.mastodon.s3.region }} --md5 --preserve --overwrite --attr x-amz-acl=public-read --remove --no-color --exclude "accounts/*" --exclude "backups/*" --exclude "cache/*" --exclude "custom_emojis/*" --exclude "media_attachments/*" --exclude "site_uploads/*" "/opt/mastodon/public" "target/{{ .Values.mastodon.s3.bucket }}" && \
+                mc mirror --region={{ .Values.mastodon.s3.region }} --md5 --preserve --overwrite --attr x-amz-acl=public-read --remove --no-color --exclude "accounts/*" --exclude "backups/*" --exclude "cache/*" --exclude "custom_emojis/*" --exclude "media_attachments/*" --exclude "site_uploads/*" "/mnt/public" "target/{{ .Values.mastodon.s3.bucket }}" && \
                 echo COMPLETE!
             {{- else }}
             - sh
@@ -157,12 +156,8 @@ spec:
                   key: AWS_ACCESS_KEY_ID
             {{- end }}
           volumeMounts:
-            - name: assets
-              mountPath: /opt/mastodon/public/assets
-            - name: system
-              mountPath: /opt/mastodon/public/system
             {{- if (and .Values.mastodon.s3.enabled .Values.mastodon.s3.cdn_host) }}
-            - name: packs
-              mountPath: /opt/mastodon/public/packs
+            - name: public
+              mountPath: /mnt/public
             {{- end }}
 {{- end -}}
