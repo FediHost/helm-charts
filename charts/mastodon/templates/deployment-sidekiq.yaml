@@ -7,10 +7,16 @@ metadata:
   name: {{ include "mastodon.fullname" $context }}-sidekiq-{{ .name }}
   labels:
     {{- include "mastodon.labels" $context | nindent 4 }}
+    {{- with $context.Values.mastodon.sidekiq.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
     app.kubernetes.io/component: sidekiq-{{ .name }}
     app.kubernetes.io/part-of: rails
   annotations:
     {{- with $context.Values.deploymentAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with $context.Values.mastodon.sidekiq.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
@@ -18,8 +24,9 @@ spec:
     {{- if (gt (int .replicas) 1) }}
       {{ fail "The scheduler queue should never have more than 1 replicas" }}
     {{- end }}
-  strategy:
-    type: Recreate
+  {{- end }}
+  {{- if $context.Values.mastodon.sidekiq.updateStrategy }}
+  strategy: {{- toYaml $context.Values.mastodon.sidekiq.updateStrategy | nindent 4 }}
   {{- end }}
   replicas: {{ .replicas }}
   {{- if (ne (toString $context.Values.mastodon.revisionHistoryLimit) "<nil>") }}
@@ -36,6 +43,9 @@ spec:
         {{- with $context.Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- with $context.Values.mastodon.sidekiq.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
         # roll the pods to pick up any db migrations or other changes
         {{- include "mastodon.rollingPodAnnotations" $context | nindent 8 }}
         checksum/config-secrets-smtp: {{ include ( print $.Template.BasePath "/secret-smtp.yaml" ) $context | sha256sum | quote }}
@@ -43,6 +53,9 @@ spec:
         {{- include "mastodon.globalLabels" $context | nindent 8 }}
         {{- include "mastodon.selectorLabels" $context | nindent 8 }}
         {{- include "mastodon.statsdExporterLabels" $context | nindent 8 }}
+        {{- with $context.Values.mastodon.sidekiq.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
         app.kubernetes.io/component: sidekiq-{{ .name }}
         app.kubernetes.io/part-of: rails
     spec:
@@ -185,6 +198,14 @@ spec:
                   name: {{ $context.Values.mastodon.cacheBuster.authToken.existingSecret }}
                   key: password
             {{- end }}
+            {{- if or $context.Values.mastodon.sidekiq.otel.enabled (and $context.Values.mastodon.otel.enabled (ne $context.Values.mastodon.sidekiq.otel.enabled false)) }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ coalesce $context.Values.mastodon.sidekiq.otel.endpointUri $context.Values.mastodon.otel.endpointUri }}
+            - name: OTEL_SERVICE_NAME_PREFIX
+              value: {{ coalesce $context.Values.mastodon.sidekiq.otel.namePrefix $context.Values.mastodon.otel.namePrefix }}
+            - name: OTEL_SERVICE_NAME_SEPARATOR
+              value: "{{ coalesce $context.Values.mastodon.sidekiq.otel.nameSeparator $context.Values.mastodon.otel.nameSeparator }}"
+            {{- end }}
           volumeMounts:
           {{- if (not $context.Values.mastodon.s3.enabled) }}
             - name: assets
@@ -199,6 +220,18 @@ spec:
           {{- end }}
           {{- with $context.Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if $context.Values.mastodon.sidekiq.readinessProbe.enabled }}
+          readinessProbe:
+            failureThreshold: {{ default 10 $context.Values.mastodon.sidekiq.readinessProbe.failureThreshold }}
+            exec:
+              command:
+              - cat
+              - {{ required "A valid sidekiq readiness path is required." $context.Values.mastodon.sidekiq.readinessProbe.path }}
+            initialDelaySeconds: {{ default 10 $context.Values.mastodon.sidekiq.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ default 2 $context.Values.mastodon.sidekiq.readinessProbe.periodSeconds }}
+            successThreshold: {{ default 1 $context.Values.mastodon.sidekiq.readinessProbe.successThreshold }}
+            timeoutSeconds: {{ default 1 $context.Values.mastodon.sidekiq.readinessProbe.timeoutSeconds }}
           {{- end }}
           resources:
             {{- toYaml (default (default $context.Values.resources $context.Values.mastodon.sidekiq.resources) .resources) | nindent 12 }}
