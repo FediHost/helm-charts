@@ -509,6 +509,7 @@ elasticsearch:
   enabled: true
   # @ignored
   image:
+    repository: bitnamilegacy/elasticsearch
     tag: 7
 
   # If you are using an external ES cluster, use `enabled: false` and set the hostname, port,
